@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { TiLocationArrow } from "react-icons/ti";
 import Button from "./Button";
 import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+
+gsap.registerPlugin(useGSAP);
+
 const Hero = () => {
     const [currentIndex, setCurrentIndex] = useState(1);
     const [hasClicked, setHasClicked] = useState(false);
@@ -27,9 +31,27 @@ const Hero = () => {
         setHasClicked(true);
         setCurrentIndex((prevIndex) => (prevIndex % totalVideos) + 1);
     };
-    useGSAP(()=>{
-        
-    })
+    useGSAP(() => {
+        if (hasClicked) {
+            gsap.set("#next-video", { visibility: "visible" });
+
+            gsap.to("#next-video", {
+                transformOrigin: "center center",
+                scale: 1,
+                width: "100%",
+                height: "100%",
+                duration: 1,
+                ease: "power1.inOut",
+                onStart: () => nextVideoRef.current.play(),
+            });
+            gsap.from("#current-video", {
+                transformOrigin: "center center",
+                scale: 0,
+                duration: 1,
+                ease: "power1.inOut",
+            });
+        }
+    });
     const getVideoSrc = (index) => `videos/hero-${index}.mp4`;
 
     return (
@@ -44,6 +66,7 @@ const Hero = () => {
                             onClick={handleMiniVdClick}
                             className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
                         >
+                            {/* mini video player used for next video for background */}
                             <video
                                 ref={nextVideoRef}
                                 src={getVideoSrc(upcomingVideoIndex)}
@@ -54,7 +77,7 @@ const Hero = () => {
                             />
                         </div>
                     </div>
-
+                    {/* invisible video player used for next video for background */}
                     <video
                         ref={nextVideoRef}
                         src={getVideoSrc(currentIndex)}
@@ -65,11 +88,12 @@ const Hero = () => {
                         className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
                         onLoadedData={handleVideoLoad}
                     />
+                    {/* video player used for current video in the background */}
                     <video
                         src={getVideoSrc(
                             currentIndex == totalVideos - 1 ? 1 : currentIndex
                         )}
-                        // autoPlay
+                        autoPlay
                         loop
                         muted
                         className="absolute left-0 top-0 w-full h-full object-cover object-center"
